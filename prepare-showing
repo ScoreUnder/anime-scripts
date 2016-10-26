@@ -1,0 +1,85 @@
+#!/bin/sh
+die() { fmt=$1; shift; printf >&2 "%s: $fmt\n" "${0##*/}" "$@"; exit 1; }
+[ "$#" -eq 4 ] || { die 'Need 4 args: parent directory, showing name, ep start, ep end'; }
+
+dir=$1/$2
+name=$2
+ep_start=$3
+ep_end=$4
+
+case $name in
+    (*' '*) die 'No spaces allowed in showing name.\nThank Makefiles for that.';;
+esac
+[ "$ep_start" -le "$ep_end" ] || die 'Starting episode cannot be greater than ending episode.'
+
+[ -d "$dir" ] || mkdir -- "$dir"
+
+ep_list=
+i=$ep_start
+while [ "$i" -le "$ep_end" ]; do
+    ep_list="$ep_list $name-$(printf %02d "$i")"
+    i=$((i+1))
+done
+
+[ -d "$dir/1-orig" ] || mkdir -- "$dir/1-orig"
+
+{
+cat << EOF
+EPS =$ep_list
+EOF
+cat << 'EOF'
+EPS_DIR        = 1-orig
+SUBS_DIR       = 2-subs
+HARDSUBS_DIR   = 3-hardsubs
+CUTS_DIR        = 4-cut
+FINAL_DIR      = 5-final
+FONT_DIR       = 0-fonts
+
+FINAL_PRE      = final-uncompressed.mkv
+FINAL_POST     = final.mkv
+
+LOCAL_FONT_DIR = ~/.fonts/anime
+
+HARDSUBS_RES   = 1280x720
+
+ALL_EPS        = $(addprefix $(EPS_DIR)/, $(addsuffix .mkv, $(EPS)))
+ALL_SUBS       = $(addprefix $(SUBS_DIR)/, $(addsuffix .ass, $(EPS)))
+ALL_HARDSUBS   = $(addprefix $(HARDSUBS_DIR)/, $(addsuffix .mkv, $(EPS)))
+
+TARGETS = subs hardsubs prep-cuts fonts
+
+all: final
+
+subs: $(ALL_SUBS)
+hardsubs: $(ALL_HARDSUBS)
+
+$(SUBS_DIR) $(HARDSUBS_DIR) $(CUTS_DIR) $(FINAL_DIR) $(FONT_DIR):
+	mkdir -- $@
+
+fonts: $(FONT_DIR)
+	cd -- $(FONT_DIR) && for f in $(addprefix ../, $(ALL_EPS)); do ffmpeg -dump_attachment:t '' -i "$$f" -y -nostdin; done || :
+	cd -- $(FONT_DIR) && for f in ./*; do cp -v -- "$$f" $(LOCAL_FONT_DIR)/; done
+
+$(SUBS_DIR)/%.ass: $(EPS_DIR)/%.mkv | $(SUBS_DIR)
+	ffmpeg -hide_banner -i $< -vn -an -c:s copy -y -nostdin $@
+	dos2unix $@
+
+$(HARDSUBS_DIR)/%.mkv: $(EPS_DIR)/%.mkv $(SUBS_DIR)/%.ass | $(HARDSUBS_DIR)
+	ff-hardsub $+ $@ $(HARDSUBS_RES)
+
+CUTS = NO_CUTS_DEFINED_PLEASE_CREATE_cuts.mk
+-include cuts.mk
+
+cuts: $(CUTS)
+
+$(FINAL_DIR)/$(FINAL_PRE): $(CUTS) | $(FINAL_DIR)
+	mkvmerge -o $@ '[' $^ ']'; [ "$$?" -le 1 ]
+
+$(FINAL_DIR)/$(FINAL_POST): $(FINAL_DIR)/$(FINAL_PRE)
+	ff-lossy-h264 $< $@
+
+final: $(FINAL_DIR)/$(FINAL_POST)
+
+.PHONY: all subs hardsubs fonts cuts final
+EOF
+} > "$dir/Makefile"
