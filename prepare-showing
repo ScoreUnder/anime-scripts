@@ -31,7 +31,7 @@ cat << 'EOF'
 EPS_DIR        = 1-orig
 SUBS_DIR       = 2-subs
 HARDSUBS_DIR   = 3-hardsubs
-CUTS_DIR        = 4-cut
+CUTS_DIR       = 4-cut
 FINAL_DIR      = 5-final
 FONT_DIR       = 0-fonts
 
