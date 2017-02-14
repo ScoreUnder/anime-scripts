@@ -89,7 +89,7 @@ CUTS = NO_CUTS_DEFINED_PLEASE_CREATE_cuts.mk
 cuts: $(CUTS)
 
 $(FINAL_DIR)/$(FINAL_PRE): $(CUTS) | $(FINAL_DIR)
-	mkvmerge -o $@ '[' $^ ']'; [ "$$?" -le 1 ]
+	mkvmerge --generate-chapters when-appending --generate-chapters-name-template '<FILE_NAME>' -o $@ '[' $^ ']'; [ "$$?" -le 1 ]
 
 $(FINAL_DIR)/$(FINAL_POST): $(FINAL_DIR)/$(FINAL_PRE)
 	ff-lossy-h264 $< $@
