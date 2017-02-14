@@ -1,11 +1,12 @@
 #!/bin/sh
 die() { fmt=$1; shift; printf >&2 "%s: $fmt\n" "${0##*/}" "$@"; exit 1; }
-[ "$#" -eq 4 ] || { die 'Need 4 args: parent directory, showing name, ep start, ep end'; }
+[ "$#" -eq 4 ] || [ "$#" -eq 5 ] || { die 'Need 4 args: parent directory, showing name, ep start, ep end[, video source dir]'; }
 
 dir=$1/$2
 name=$2
 ep_start=$3
 ep_end=$4
+seed_dir=$5
 
 case $name in
     (*' '*) die 'No spaces allowed in showing name.\nThank Makefiles for that.';;
@@ -13,15 +14,29 @@ esac
 [ "$ep_start" -le "$ep_end" ] || die 'Starting episode cannot be greater than ending episode.'
 
 [ -d "$dir" ] || mkdir -- "$dir"
+[ -d "$dir/1-orig" ] || mkdir -- "$dir/1-orig"
 
 ep_list=
 i=$ep_start
 while [ "$i" -le "$ep_end" ]; do
-    ep_list="$ep_list $name-$(printf %02d "$i")"
+    num=$(printf %02d "$i")
+    ep=$name-$num
+    ep_list="$ep_list $ep"
+
+    if [ -n "$seed_dir" ]; then
+        set -- "$seed_dir"/"$num"*
+        if ! [ -f "$1" ]; then
+            set -- "$seed_dir"/*[!0-9a-fA-F]"$num"[!0-9a-fA-F]*
+        fi
+        if [ -f "$1" ]; then
+            ext=${1##*.}
+            [ "${ext#*/}" = "$ext" ] || ext=mkv
+            ln -s "$1" "$dir/1-orig/$ep.$ext"
+        fi
+    fi
+
     i=$((i+1))
 done
-
-[ -d "$dir/1-orig" ] || mkdir -- "$dir/1-orig"
 
 {
 cat << EOF
