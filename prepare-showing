@@ -40,7 +40,8 @@ done
 
 {
 cat << EOF
-EPS =$ep_list
+NAME           = $name
+EPS            =$ep_list
 EOF
 cat << 'EOF'
 EPS_DIR        = 1-orig
