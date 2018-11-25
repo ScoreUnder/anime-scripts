@@ -62,7 +62,7 @@ ALL_EPS        = $(addprefix $(EPS_DIR)/, $(addsuffix .mkv, $(EPS)))
 ALL_SUBS       = $(addprefix $(SUBS_DIR)/, $(addsuffix .ass, $(EPS)))
 ALL_HARDSUBS   = $(addprefix $(HARDSUBS_DIR)/, $(addsuffix .mkv, $(EPS)))
 
-TARGETS = subs hardsubs prep-cuts fonts
+TARGETS = subs hardsubs cuts fonts
 
 all: final
 
