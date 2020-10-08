@@ -97,5 +97,6 @@ $(FINAL_DIR)/$(FINAL_POST): $(FINAL_DIR)/$(FINAL_PRE)
 final: $(FINAL_DIR)/$(FINAL_POST)
 
 .PHONY: all subs hardsubs fonts cuts final
+.DELETE_ON_ERROR:
 EOF
 } > "$dir/Makefile"
