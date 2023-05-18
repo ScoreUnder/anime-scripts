@@ -66,6 +66,9 @@ TARGETS = subs hardsubs cuts fonts
 
 all: final
 
+clean:
+	rm -f -- $(ALL_HARDSUBS) $(CUTS) $(FINAL_DIR)/$(FINAL_PRE) $(FINAL_DIR)/$(FINAL_POST)
+
 subs: $(ALL_SUBS)
 hardsubs: $(ALL_HARDSUBS)
 
@@ -96,7 +99,7 @@ $(FINAL_DIR)/$(FINAL_POST): $(FINAL_DIR)/$(FINAL_PRE)
 
 final: $(FINAL_DIR)/$(FINAL_POST)
 
-.PHONY: all subs hardsubs fonts cuts final
+.PHONY: all clean subs hardsubs fonts cuts final
 .DELETE_ON_ERROR:
 EOF
 } > "$dir/Makefile"
