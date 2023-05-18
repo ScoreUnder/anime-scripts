@@ -26,7 +26,7 @@ while [ "$i" -le "$ep_end" ]; do
     if [ -n "$seed_dir" ]; then
         set -- "$seed_dir"/"$num"*
         if ! [ -f "$1" ]; then
-            set -- "$seed_dir"/*[!0-9a-fA-F]"$num"[!0-9a-fA-F]*
+            set -- "$seed_dir"/*[!0-9a-dfA-DF]"$num"[!0-9a-fA-F]*
         fi
         if [ -f "$1" ]; then
             ext=${1##*.}
