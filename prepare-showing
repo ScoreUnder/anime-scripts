@@ -75,9 +75,15 @@ hardsubs: $(ALL_HARDSUBS)
 $(SUBS_DIR) $(HARDSUBS_DIR) $(CUTS_DIR) $(FINAL_DIR) $(FONT_DIR):
 	mkdir -- $@
 
-fonts: $(FONT_DIR)
-	cd -- $(FONT_DIR) && for f in $(addprefix ../, $(ALL_EPS)); do ffmpeg -hide_banner -loglevel warning -dump_attachment:t '' -i "$$f" -y -nostdin; done || :
-	cd -- $(FONT_DIR) && for f in ./*; do cp -v -- "$$f" $(LOCAL_FONT_DIR)/; done
+fonts: $(addprefix _fonts_from/, $(ALL_EPS)) | $(FONT_DIR)
+	find $(FONT_DIR) -type f -exec cp -v -- {} $(LOCAL_FONT_DIR)/ \;
+
+_fonts_from/%: % FORCE | $(FONT_DIR)
+	-f=$$(basename -- '$<'); \
+		cd -- $(FONT_DIR) && \
+		mkdir -p -- "$$f" && \
+		cd -- "$$f" && \
+		ffmpeg -hide_banner -loglevel warning -dump_attachment:t '' -i ../../$< -y -nostdin -t 0 -f null -
 
 $(SUBS_DIR)/%.ass: $(EPS_DIR)/%.mkv | $(SUBS_DIR)
 	ffmpeg -hide_banner -loglevel warning -i $< -vn -an -c:s copy -y -nostdin $@
@@ -99,6 +105,7 @@ $(FINAL_DIR)/$(FINAL_POST): $(FINAL_DIR)/$(FINAL_PRE)
 
 final: $(FINAL_DIR)/$(FINAL_POST)
 
+FORCE:
 .PHONY: all clean subs hardsubs fonts cuts final
 .DELETE_ON_ERROR:
 EOF
