@@ -1,2 +1,4 @@
 #!/bin/sh
-exec mkdir -- "$(date -d Thu +%F)"
+dirname=$(date -d Thu +%F)
+[ -d "$dirname" ] || mkdir -- "$dirname" || exit
+exec ln -sfT -- "$dirname" next
