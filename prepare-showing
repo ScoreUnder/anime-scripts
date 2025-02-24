@@ -92,8 +92,12 @@ $(SUBS_DIR)/%.ass: $(EPS_DIR)/%.mkv | $(SUBS_DIR)
 $(HARDSUBS_DIR)/%.mkv: $(EPS_DIR)/%.mkv $(SUBS_DIR)/%.ass | $(HARDSUBS_DIR)
 	ff-hardsub $+ $@ $(HARDSUBS_RES)
 
-CUTS = NO_CUTS_DEFINED_PLEASE_CREATE_cuts.mk
+CUTS = NO_CUTS_DEFINED
 -include cuts.mk
+
+NO_CUTS_DEFINED:
+	@echo 'ERROR: Cannot cut anime: no cuts defined; please create cuts.mk'
+	@exit 1
 
 cuts: $(CUTS)
 
@@ -106,7 +110,7 @@ $(FINAL_DIR)/$(FINAL_POST): $(FINAL_DIR)/$(FINAL_PRE)
 final: $(FINAL_DIR)/$(FINAL_POST)
 
 FORCE:
-.PHONY: all clean subs hardsubs fonts cuts final
+.PHONY: all clean subs hardsubs fonts cuts final NO_CUTS_DEFINED
 .DELETE_ON_ERROR:
 EOF
 } > "$dir/Makefile"
