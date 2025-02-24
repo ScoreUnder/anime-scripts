@@ -57,6 +57,8 @@ FINAL_POST     = final.mkv
 LOCAL_FONT_DIR = ~/.fonts/anime
 
 HARDSUBS_RES   = 1280x720
+GRAB_SUBS      = -c:s copy
+HARDSUB_OPTS   = --map 0:v --map 0:a
 
 ALL_EPS        = $(addprefix $(EPS_DIR)/, $(addsuffix .mkv, $(EPS)))
 ALL_SUBS       = $(addprefix $(SUBS_DIR)/, $(addsuffix .ass, $(EPS)))
@@ -86,11 +88,11 @@ _fonts_from/%: % FORCE | $(FONT_DIR)
 		ffmpeg -hide_banner -loglevel warning -dump_attachment:t '' -i ../../$< -y -nostdin -t 0 -f null -
 
 $(SUBS_DIR)/%.ass: $(EPS_DIR)/%.mkv | $(SUBS_DIR)
-	ffmpeg -hide_banner -loglevel warning -i $< -vn -an -c:s copy -y -nostdin $@
+	ffmpeg -hide_banner -loglevel warning -i $< -vn -an $(GRAB_SUBS) -y -nostdin $@
 	dos2unix $@
 
 $(HARDSUBS_DIR)/%.mkv: $(EPS_DIR)/%.mkv $(SUBS_DIR)/%.ass | $(HARDSUBS_DIR)
-	ff-hardsub $+ $@ $(HARDSUBS_RES)
+	ff-hardsub $(HARDSUB_OPTS) $+ $@ $(HARDSUBS_RES)
 
 CUTS = NO_CUTS_DEFINED
 -include cuts.mk
